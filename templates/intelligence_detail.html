@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Entity: {{ entity.name }} | RNIC{% endblock %}
+{% block title %}Intelligence Explorer | RNIC{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 <style>
-    .entity-header {
+    .intelligence-header {
         background: white;
         border-radius: 16px;
         padding: 2rem;
@@ -24,6 +24,15 @@
     .list-group-item:hover {
         background-color: var(--bg-secondary);
     }
+    .clickable-node {
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    .clickable-node:hover {
+        transform: translateY(-3px) scale(1.02) !important;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+        z-index: 10;
+    }
 </style>
 {% endblock %}
 
@@ -34,50 +43,51 @@
         <a href="javascript:history.back()" class="text-decoration-none text-muted"><i class="bi bi-arrow-left"></i> Back to previous</a>
     </div>
 
-    <!-- 1. Entity Header & 2. Momentum Card -->
+    <!-- 1. Intelligence Header & 6. Source Context Card -->
     <div class="row g-4 mb-4">
         <div class="col-12 col-xl-8">
-            <div class="entity-header h-100 d-flex flex-column justify-content-center mb-0">
+            <div class="intelligence-header h-100 d-flex flex-column justify-content-center mb-0">
                 <div class="d-flex align-items-center mb-2">
-                    <h1 class="mb-0 me-3">{{ entity.name }}</h1>
-                    <span class="badge bg-primary rounded-pill px-3 py-2">{{ entity.entity_type }}</span>
+                    <h1 class="mb-0 me-3">Intelligence Insight</h1>
+                    <span class="badge bg-primary rounded-pill px-3 py-2">{{ intelligence.content_type|title }}</span>
                 </div>
-                <p class="text-muted mb-3">{{ entity.description }}</p>
+                <!-- 2. Intelligence Summary -->
+                <p class="text-dark fs-5 mt-3 mb-3">{{ intelligence.summary }}</p>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for topic in (intelligence.topics or []) %}
+                        <span class="badge bg-light text-dark border">{{ topic }}</span>
+                    {% endfor %}
+                </div>
                 <div class="d-flex gap-3 text-muted small">
-                    <span><i class="bi bi-bullseye"></i> Confidence: {{ '%.1f'|format(entity.confidence_score) }}%</span>
-                    <span><i class="bi bi-calendar3"></i> First Detected: {{ entity.created_at.strftime('%B %d, %Y') if entity.created_at else 'Unknown' }}</span>
+                    <span><i class="bi bi-bullseye"></i> Confidence: {{ '%.1f'|format(intelligence.confidence_score) }}%</span>
+                    <span><i class="bi bi-calendar3"></i> Date: {{ intelligence.created_at.strftime('%B %d, %Y') if intelligence.created_at else 'Unknown' }}</span>
                 </div>
             </div>
         </div>
         <div class="col-12 col-xl-4">
             <div class="stat-card h-100 d-flex flex-column justify-content-center border" style="background: white; padding: 2rem; margin-bottom: 0;">
                 <div class="d-flex align-items-center mb-3">
-                    <div class="stat-icon me-3"><i class="bi bi-activity"></i></div>
-                    <div class="stat-label fs-5 mb-0">Momentum</div>
+                    <div class="stat-icon me-3"><i class="bi bi-info-circle"></i></div>
+                    <div class="stat-label fs-5 mb-0">Source Context</div>
                 </div>
-                <div class="stat-value display-4 fw-bold mb-2">{{ '%.0f'|format(momentum_score) }}</div>
-                {% if trend_direction == 'Rising' %}
-                <div class="stat-trend positive"><i class="bi bi-arrow-up-right"></i> Rising Trend</div>
-                {% elif trend_direction == 'Declining' %}
-                <div class="stat-trend negative text-danger"><i class="bi bi-arrow-down-right"></i> Declining Trend</div>
-                {% else %}
-                <div class="stat-trend neutral text-muted"><i class="bi bi-dash"></i> Stable Trend</div>
-                {% endif %}
+                <div class="mb-2"><strong>Provider:</strong> <span class="text-muted">{{ intelligence.provider|title }}</span></div>
+                <div class="mb-2"><strong>Content Type:</strong> <span class="text-muted">{{ intelligence.content_type|title }}</span></div>
+                <div class="mb-2"><strong>Original ID:</strong> <span class="text-muted" style="word-break: break-all; font-size: 0.85rem;">{{ intelligence.content_id }}</span></div>
             </div>
         </div>
     </div>
 
     <div class="row g-4 mb-4">
-        <!-- 4. Intelligence Feed -->
+        <!-- 4. Related Intelligence -->
         <div class="col-12 col-xl-8">
             <div class="panel h-100">
                 <div class="panel-header">
-                    <h5 class="panel-title"><i class="bi bi-cpu"></i> Intelligence Context</h5>
+                    <h5 class="panel-title"><i class="bi bi-link-45deg"></i> Related Intelligence</h5>
                 </div>
                 <div class="panel-body">
-                    {% if intelligence %}
+                    {% if related_intelligence %}
                         <div class="feed-list">
-                        {% for intel in intelligence %}
+                        {% for intel in related_intelligence %}
                             <div class="insight-card mb-3 p-3 border rounded bg-white shadow-sm clickable-node" onclick="window.location.href='{{ url_for('intelligence.intelligence_explorer', intelligence_id=intel.id) }}';">
                                 <p class="mb-2 text-dark">{{ intel.summary }}</p>
                                 <div class="d-flex justify-content-between align-items-center mt-3">
@@ -95,7 +105,7 @@
                         {% endfor %}
                         </div>
                     {% else %}
-                        <p class="text-muted text-center py-4">No recent intelligence found for this entity.</p>
+                        <p class="text-muted text-center py-4 mb-0">No related intelligence found.</p>
                     {% endif %}
                 </div>
             </div>
@@ -104,7 +114,7 @@
         <!-- Right Column: Related Entities & Strategic Signals -->
         <div class="col-12 col-xl-4 d-flex flex-column gap-4">
             
-            <!-- 3. Related Entities Panel -->
+            <!-- 3. Related Entities -->
             <div class="panel">
                 <div class="panel-header">
                     <h5 class="panel-title"><i class="bi bi-diagram-3"></i> Related Entities</h5>
@@ -112,31 +122,34 @@
                 <div class="panel-body p-0">
                     {% if related_entities %}
                         <ul class="list-group list-group-flush rounded-bottom">
-                        {% for item in related_entities %}
+                        {% for entity in related_entities %}
                             <li class="list-group-item d-flex justify-content-between align-items-center p-3 bg-transparent">
-                                <a href="{{ url_for('entity.get_entity_by_id', entity_id=item.entity.id) }}" class="text-decoration-none text-dark fw-medium">
-                                    {{ item.entity.name }}
-                                </a>
+                                <div>
+                                    <a href="{{ url_for('entity.get_entity_by_id', entity_id=entity.id) }}" class="text-decoration-none text-dark fw-medium">
+                                        {{ entity.name }}
+                                    </a>
+                                    <span class="d-block text-muted small">{{ entity.entity_type }}</span>
+                                </div>
                                 <span class="badge bg-light text-dark border rounded-pill">
-                                    Score: {{ '%.0f'|format(item.score) }}
+                                    {{ '%.0f'|format(entity.confidence_score) }}%
                                 </span>
                             </li>
                         {% endfor %}
                         </ul>
                     {% else %}
-                        <p class="text-muted text-center py-4 mb-0">No strong relationships discovered yet.</p>
+                        <p class="text-muted text-center py-4 mb-0">No related entities discovered.</p>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- 5. Strategic Signals Panel -->
+            <!-- 5. Strategic Signals -->
             <div class="panel flex-grow-1">
                 <div class="panel-header">
                     <h5 class="panel-title"><i class="bi bi-lightbulb"></i> Strategic Signals</h5>
                 </div>
                 <div class="panel-body">
-                    {% if signals %}
-                        {% for signal in signals %}
+                    {% if strategic_signals %}
+                        {% for signal in strategic_signals %}
                         <div class="insight-card mb-3 p-3 border rounded shadow-sm bg-white
                             {% if signal.signal_type == 'Opportunity' %}border-success
                             {% elif signal.signal_type == 'Risk' %}border-danger
@@ -153,12 +166,12 @@
                                     {% else %}bg-secondary{% endif %}">
                                     {{ signal.signal_type }}
                                 </span>
-                                <div class="text-muted small"><i class="bi bi-bullseye"></i> Conf: {{ '%.0f'|format(signal.confidence_score) }}%</div>
+                                <div class="text-muted small"><i class="bi bi-bullseye"></i> {{ '%.0f'|format(signal.confidence_score) }}%</div>
                             </div>
                         </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted text-center py-4 mb-0">No strategic signals detected involving this entity.</p>
+                        <p class="text-muted text-center py-4 mb-0">No strategic signals detected involving these entities.</p>
                     {% endif %}
                 </div>
             </div>

@@ -20,9 +20,9 @@
             <div class="row g-4">
                 {% for item in intelligence_results.items %}
                 <div class="col-12 col-md-6 col-lg-4">
-                    <div class="card h-100 shadow-sm border-0 bg-white">
+                    <div class="card h-100 shadow-sm border-0 bg-white transition-hover position-relative">
                         <div class="card-body">
-                            <p class="card-text text-dark">{{ item.summary }}</p>
+                            <p class="card-text text-dark"><a href="{{ url_for('intelligence.intelligence_explorer', intelligence_id=item.id) }}" class="text-decoration-none text-dark stretched-link">{{ item.summary }}</a></p>
                             {% if item.topics %}
                             <div class="mb-2">
                                 {% for topic in item.topics %}

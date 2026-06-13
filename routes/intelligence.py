@@ -1,5 +1,9 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, render_template, abort
 from services.intelligence_service import IntelligenceService
+from extensions import db
+from models.intelligence import Intelligence
+from models.entity import Entity
+from models.strategic_signal import StrategicSignal
 
 intelligence_bp = Blueprint('intelligence', __name__)
 
@@ -49,3 +53,49 @@ def get_research_intelligence(paper_id):
     if not record:
         return jsonify({"error": "No intelligence found for this research paper"}), 404
     return jsonify(_serialize(record))
+
+@intelligence_bp.route('/<string:intelligence_id>', methods=['GET'])
+def intelligence_explorer(intelligence_id):
+    """GET /intelligence/<intelligence_id> — Renders Intelligence Explorer page."""
+    record = Intelligence.query.filter_by(id=intelligence_id, is_deleted=False).first()
+    if not record:
+        abort(404)
+
+    # Related Entities
+    related_entities = []
+    if record.entities:
+        related_entities = Entity.query.filter(
+            Entity.name.in_(record.entities),
+            Entity.is_deleted == False
+        ).all()
+        
+    # Related Intelligence
+    related_intelligence = []
+    if record.entities:
+        conditions = [Intelligence.entities.ilike(f'%"{e}"%') for e in record.entities]
+        related_intelligence = Intelligence.query.filter(
+            Intelligence.id != record.id,
+            Intelligence.is_deleted == False,
+            db.or_(*conditions)
+        ).order_by(Intelligence.created_at.desc()).limit(10).all()
+
+    # Strategic Signals
+    strategic_signals = []
+    if record.entities:
+        signal_conditions = []
+        for e in record.entities:
+            signal_conditions.append(StrategicSignal.title.ilike(f'%{e}%'))
+            signal_conditions.append(StrategicSignal.description.ilike(f'%{e}%'))
+        
+        strategic_signals = StrategicSignal.query.filter(
+            StrategicSignal.is_deleted == False,
+            db.or_(*signal_conditions)
+        ).order_by(StrategicSignal.created_at.desc()).limit(5).all()
+
+    return render_template(
+        'intelligence_detail.html',
+        intelligence=record,
+        related_entities=related_entities,
+        related_intelligence=related_intelligence,
+        strategic_signals=strategic_signals
+    )

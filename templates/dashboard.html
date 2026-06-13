@@ -107,7 +107,8 @@
                 <div class="insight-feed mt-3" id="intelligenceFeed">
                     {% if latest_intelligence %}
                     {% for intel in latest_intelligence %}
-                    <div class="insight-card" data-id="{{ intel.id }}">
+                    <div class="insight-card clickable-node" data-id="{{ intel.id }}"
+                        onclick="window.location.href=`{{ url_for('intelligence.intelligence_explorer', intelligence_id=intel.id) }}`;">
                         <div class="d-flex justify-content-between align-items-start mb-1">
                             <h6 class="mb-0" style="font-size:0.85rem; line-height:1.4;">{{ intel.summary[:100] ~ '...'
                                 if intel.summary and intel.summary|length > 100 else intel.summary or 'No summary
@@ -247,9 +248,12 @@
                     <div class="feed-item">
                         <div class="feed-icon news"><i class="bi bi-newspaper"></i></div>
                         <div class="feed-content">
-                            <h6><a href="{{ item.original_url }}" target="_blank"
-                                    class="feed-title text-decoration-none">{{
-                                    item.title }}</a></h6>
+                            <h6>
+                                <a href="{{ item.original_url }}" target="_blank"
+                                    class="feed-title text-decoration-none">
+                                    {{ item.title }}
+                                </a>
+                            </h6>
                             <div class="feed-meta">{{ item.source.name if item.source else 'Unknown Source' }} • {{
                                 item.published_at.strftime('%Y-%m-%d %H:%M') if item.published_at else 'Just now' }}
                             </div>
