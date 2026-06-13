@@ -4,6 +4,18 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<style>
+    .clickable-node {
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+    .clickable-node:hover {
+        transform: translateY(-3px) scale(1.05) !important;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+        z-index: 10;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -171,73 +183,90 @@
                     </svg>
 
                     {% set classes = ['node-center pulse-glow', 'node-top', 'node-bottom', 'node-left', 'node-right'] %}
-                    {% for i in range(entity_graph.nodes|length) %}
-                    {% if i < 5 %} <div class="node {{ classes[i] }}"
-                        title="{{ entity_graph.nodes[i].type }} - Score: {{ '%.0f'|format(entity_graph.nodes[i].confidence) }}">
-                        {% set raw_name = entity_graph.nodes[i].name.lower() %}
-                        {% if 'google' in raw_name %}{% set logo_file = 'google.png' %}
-                        {% elif 'apple' in raw_name %}{% set logo_file = 'apple.png' %}
-                        {% elif 'microsoft' in raw_name %}{% set logo_file = 'microsoft.png' %}
-                        {% elif 'amazon' in raw_name %}{% set logo_file = 'amazon.png' %}
-                        {% elif 'spacex' in raw_name %}{% set logo_file = 'spacex.png' %}
-                        {% else %}{% set logo_file = raw_name|replace(' ', '') ~ '.png' %}{% endif %}
+
+                    {% for node in entity_graph.nodes[:5] %}
+                    <div class="node {{ classes[loop.index0] }} clickable-node"
+                        title="{{ node.type }} - Score: {{ '%.0f'|format(node.confidence) }}"
+                        data-url="{{ url_for('entity.get_entity_by_id', entity_id=node.id) }}"
+                        onclick="window.location.href=this.dataset.url;">
+
+                        {% set raw_name = node.name.lower() %}
+
+                        {% if 'google' in raw_name %}
+                        {% set logo_file = 'google.png' %}
+                        {% elif 'apple' in raw_name %}
+                        {% set logo_file = 'apple.png' %}
+                        {% elif 'microsoft' in raw_name %}
+                        {% set logo_file = 'microsoft.png' %}
+                        {% elif 'amazon' in raw_name %}
+                        {% set logo_file = 'amazon.png' %}
+                        {% elif 'spacex' in raw_name %}
+                        {% set logo_file = 'spacex.png' %}
+                        {% else %}
+                        {% set logo_file = raw_name|replace(' ', '') ~ '.png' %}
+                        {% endif %}
+
                         <img src="{{ url_for('static', filename='img/logos/' ~ logo_file) }}" class="node-logo"
                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" alt="">
-                        <div class="node-initials" style="display:none;">{{ entity_graph.nodes[i].name[:2] | upper }}
-                        </div>
-                        <span>{{ entity_graph.nodes[i].name }}</span>
-                </div>
-                {% endif %}
-                {% endfor %}
-                {% else %}
-                <div class="p-4 text-center text-muted"
-                    style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;">
-                    <i class="bi bi-diagram-3 fs-2 mb-2 d-block"></i>
-                    <p class="mb-0 small">No entities discovered yet.</p>
-                    <p class="small">The knowledge graph will populate automatically.</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Live Aggregated Feed -->
-<div class="col-12 col-lg-6 fade-in-up">
-    <div class="panel">
-        <div class="panel-header">
-            <h5 class="panel-title">Intelligence Feed</h5>
-            <div class="filter-group">
-                <button class="btn-filter active">All</button>
-                <button class="btn-filter">News</button>
-                <button class="btn-filter">Research</button>
-            </div>
-        </div>
-        <div class="panel-body p-0">
-            <div class="feed-list" id="newsFeedList">
-                {% if latest_news %}
-                {% for item in latest_news %}
-                <div class="feed-item">
-                    <div class="feed-icon news"><i class="bi bi-newspaper"></i></div>
-                    <div class="feed-content">
-                        <h6><a href="{{ item.original_url }}" target="_blank" class="feed-title text-decoration-none">{{
-                                item.title }}</a></h6>
-                        <div class="feed-meta">{{ item.source.name if item.source else 'Unknown Source' }} • {{
-                            item.published_at.strftime('%Y-%m-%d %H:%M') if item.published_at else 'Just now' }}</div>
+                        <div class="node-initials" style="display:none;">
+                            {{ node.name[:2] | upper }}
+                        </div>
+
+                        <span>{{ node.name }}</span>
                     </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="p-4 text-center text-muted"
+                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;">
+                        <i class="bi bi-diagram-3 fs-2 mb-2 d-block"></i>
+                        <p class="mb-0 small">No entities discovered yet.</p>
+                        <p class="small">The knowledge graph will populate automatically.</p>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endfor %}
-                {% else %}
-                <div class="p-4 text-center text-muted">
-                    <i class="bi bi-inbox fs-2 mb-2 d-block"></i>
-                    <p class="mb-0 small">No intelligence gathered yet.</p>
-                    <p class="small">The background worker will sync shortly.</p>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Live Aggregated Feed -->
+    <div class="col-12 col-lg-6 fade-in-up">
+        <div class="panel">
+            <div class="panel-header">
+                <h5 class="panel-title">Intelligence Feed</h5>
+                <div class="filter-group">
+                    <button class="btn-filter active">All</button>
+                    <button class="btn-filter">News</button>
+                    <button class="btn-filter">Research</button>
+                </div>
+            </div>
+            <div class="panel-body p-0">
+                <div class="feed-list" id="newsFeedList">
+                    {% if latest_news %}
+                    {% for item in latest_news %}
+                    <div class="feed-item">
+                        <div class="feed-icon news"><i class="bi bi-newspaper"></i></div>
+                        <div class="feed-content">
+                            <h6><a href="{{ item.original_url }}" target="_blank"
+                                    class="feed-title text-decoration-none">{{
+                                    item.title }}</a></h6>
+                            <div class="feed-meta">{{ item.source.name if item.source else 'Unknown Source' }} • {{
+                                item.published_at.strftime('%Y-%m-%d %H:%M') if item.published_at else 'Just now' }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-inbox fs-2 mb-2 d-block"></i>
+                        <p class="mb-0 small">No intelligence gathered yet.</p>
+                        <p class="small">The background worker will sync shortly.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Phase 8: Strategic Intelligence Section -->

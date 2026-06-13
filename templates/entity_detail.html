@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Entity: {{ entity.name }} | RNIC{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<style>
+    .entity-header {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-color);
+    }
+    .badge-confidence {
+        font-size: 0.85rem;
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+    }
+    .list-group-item:hover {
+        background-color: var(--bg-secondary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 fade-in">
+    <!-- Back Button -->
+    <div class="mb-3">
+        <a href="javascript:history.back()" class="text-decoration-none text-muted"><i class="bi bi-arrow-left"></i> Back to previous</a>
+    </div>
+
+    <!-- 1. Entity Header & 2. Momentum Card -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-xl-8">
+            <div class="entity-header h-100 d-flex flex-column justify-content-center mb-0">
+                <div class="d-flex align-items-center mb-2">
+                    <h1 class="mb-0 me-3">{{ entity.name }}</h1>
+                    <span class="badge bg-primary rounded-pill px-3 py-2">{{ entity.entity_type }}</span>
+                </div>
+                <p class="text-muted mb-3">{{ entity.description }}</p>
+                <div class="d-flex gap-3 text-muted small">
+                    <span><i class="bi bi-bullseye"></i> Confidence: {{ '%.1f'|format(entity.confidence_score) }}%</span>
+                    <span><i class="bi bi-calendar3"></i> First Detected: {{ entity.created_at.strftime('%B %d, %Y') if entity.created_at else 'Unknown' }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-4">
+            <div class="stat-card h-100 d-flex flex-column justify-content-center border" style="background: white; padding: 2rem; margin-bottom: 0;">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="stat-icon me-3"><i class="bi bi-activity"></i></div>
+                    <div class="stat-label fs-5 mb-0">Momentum</div>
+                </div>
+                <div class="stat-value display-4 fw-bold mb-2">{{ '%.0f'|format(momentum_score) }}</div>
+                {% if trend_direction == 'Rising' %}
+                <div class="stat-trend positive"><i class="bi bi-arrow-up-right"></i> Rising Trend</div>
+                {% elif trend_direction == 'Declining' %}
+                <div class="stat-trend negative text-danger"><i class="bi bi-arrow-down-right"></i> Declining Trend</div>
+                {% else %}
+                <div class="stat-trend neutral text-muted"><i class="bi bi-dash"></i> Stable Trend</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- 4. Intelligence Feed -->
+        <div class="col-12 col-xl-8">
+            <div class="panel h-100">
+                <div class="panel-header">
+                    <h5 class="panel-title"><i class="bi bi-cpu"></i> Intelligence Context</h5>
+                </div>
+                <div class="panel-body">
+                    {% if intelligence %}
+                        <div class="feed-list">
+                        {% for intel in intelligence %}
+                            <div class="insight-card mb-3 p-3 border rounded bg-white shadow-sm">
+                                <p class="mb-2 text-dark">{{ intel.summary }}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div class="insight-tags">
+                                        {% for topic in (intel.topics or [])[:3] %}
+                                        <span class="tag">{{ topic }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="text-muted small">
+                                        <span class="me-3"><i class="bi bi-bullseye"></i> {{ '%.0f'|format(intel.confidence_score) }}%</span>
+                                        <span><i class="bi bi-clock"></i> {{ intel.created_at.strftime('%Y-%m-%d') if intel.created_at else '' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No recent intelligence found for this entity.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Related Entities & Strategic Signals -->
+        <div class="col-12 col-xl-4 d-flex flex-column gap-4">
+            
+            <!-- 3. Related Entities Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h5 class="panel-title"><i class="bi bi-diagram-3"></i> Related Entities</h5>
+                </div>
+                <div class="panel-body p-0">
+                    {% if related_entities %}
+                        <ul class="list-group list-group-flush rounded-bottom">
+                        {% for item in related_entities %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-3 bg-transparent">
+                                <a href="{{ url_for('entity.get_entity_by_id', entity_id=item.entity.id) }}" class="text-decoration-none text-dark fw-medium">
+                                    {{ item.entity.name }}
+                                </a>
+                                <span class="badge bg-light text-dark border rounded-pill">
+                                    Score: {{ '%.0f'|format(item.score) }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted text-center py-4 mb-0">No strong relationships discovered yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 5. Strategic Signals Panel -->
+            <div class="panel flex-grow-1">
+                <div class="panel-header">
+                    <h5 class="panel-title"><i class="bi bi-lightbulb"></i> Strategic Signals</h5>
+                </div>
+                <div class="panel-body">
+                    {% if signals %}
+                        {% for signal in signals %}
+                        <div class="insight-card mb-3 p-3 border rounded shadow-sm bg-white
+                            {% if signal.signal_type == 'Opportunity' %}border-success
+                            {% elif signal.signal_type == 'Risk' %}border-danger
+                            {% elif signal.signal_type == 'Emerging Trend' %}border-info
+                            {% elif signal.signal_type == 'Competitive Activity' %}border-warning
+                            {% endif %}">
+                            <h6 class="mb-2 text-dark">{{ signal.title }}</h6>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge 
+                                    {% if signal.signal_type == 'Opportunity' %}bg-success
+                                    {% elif signal.signal_type == 'Risk' %}bg-danger
+                                    {% elif signal.signal_type == 'Emerging Trend' %}bg-info
+                                    {% elif signal.signal_type == 'Competitive Activity' %}bg-warning text-dark
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ signal.signal_type }}
+                                </span>
+                                <div class="text-muted small"><i class="bi bi-bullseye"></i> Conf: {{ '%.0f'|format(signal.confidence_score) }}%</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4 mb-0">No strategic signals detected involving this entity.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
