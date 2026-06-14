@@ -18,7 +18,6 @@ class News(BaseModel):
     # Relationships
     topics = db.relationship('Topic', secondary=news_topics, backref=db.backref('news_items', lazy='dynamic'))
     ai_insights = db.relationship('AIInsight', backref='news', lazy=True)
-    bookmarks = db.relationship('Bookmark', backref='news', lazy=True)
 
 
 class ResearchPaper(BaseModel):
@@ -34,7 +33,6 @@ class ResearchPaper(BaseModel):
     content_hash = db.Column(db.String(64), unique=True, nullable=True, index=True)
     published_at = db.Column(db.DateTime, nullable=False, index=True)
 
-    # Relationships
+   # Relationships
     topics = db.relationship('Topic', secondary=research_topics, backref=db.backref('research_papers', lazy='dynamic'))
     ai_insights = db.relationship('AIInsight', backref='research_paper', lazy=True)
-    bookmarks = db.relationship('Bookmark', backref='research_paper', lazy=True)

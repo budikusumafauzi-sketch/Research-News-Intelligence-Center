@@ -105,6 +105,7 @@ def create_app(
 
     _register_error_handlers(app)
     _register_blueprints(app)
+    _register_context_processors(app)
 
     # Start the background tasks
     init_scheduler(app)
@@ -153,6 +154,18 @@ def _register_error_handlers(app):
         app.logger.exception("Unhandled Exception")
         return jsonify({"error": "An unexpected error occurred", "status_code": 500}), 500
 
+def _register_context_processors(app):
+    """Register context processors to inject global variables into templates."""
+    @app.context_processor
+    def inject_unread_alerts():
+        try:
+            from models.alert import Alert
+            count = Alert.query.filter_by(is_read=False).count()
+            return dict(unread_alerts_count=count)
+        except Exception:
+            # Failsafe if DB or table isn't ready
+            return dict(unread_alerts_count=0)
+
 def _register_blueprints(app):
     """Register all application blueprints."""
     from routes.dashboard import dashboard_bp
@@ -165,6 +178,7 @@ def _register_blueprints(app):
     from routes.entity import entity_bp
     from routes.strategic import strategic_bp
     from routes.search import search_bp
+    from routes.alerts import alerts_bp
 
     app.register_blueprint(dashboard_bp, url_prefix='/')
     app.register_blueprint(news_bp, url_prefix='/news')
@@ -176,6 +190,7 @@ def _register_blueprints(app):
     app.register_blueprint(entity_bp, url_prefix='/entities')
     app.register_blueprint(strategic_bp, url_prefix='/strategic')
     app.register_blueprint(search_bp, url_prefix='/search')
+    app.register_blueprint(alerts_bp, url_prefix='/alerts')
 
 if __name__ == '__main__':
     # Startup sequence

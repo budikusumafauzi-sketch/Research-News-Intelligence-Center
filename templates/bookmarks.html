@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Watchlist | RNIC{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<style>
+    .bookmark-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .bookmark-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+    }
+    .remove-btn {
+        z-index: 10;
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Watchlist</h1>
+    </div>
+
+    <!-- Saved Intelligence Section -->
+    <h3 class="mb-3 text-dark"><i class="bi bi-journal-bookmark"></i> Saved Intelligence</h3>
+    {% if saved_intelligence %}
+    <div class="row g-4 mb-5">
+        {% for item in saved_intelligence %}
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="insight-card p-4 border rounded bg-white shadow-sm h-100 d-flex flex-column bookmark-card position-relative" style="cursor: pointer;" data-url="{{ url_for('intelligence.intelligence_explorer', intelligence_id=item.record.id) }}" onclick="window.location.href=this.getAttribute('data-url');">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="badge bg-primary rounded-pill px-3 py-2">{{ item.record.content_type|title }}</span>
+                    <form action="{{ url_for('bookmarks.delete_bookmark', bookmark_id=item.bookmark.id) }}" method="POST" class="remove-btn" onclick="event.stopPropagation();">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove Bookmark">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    </form>
+                </div>
+                <p class="mb-3 text-dark flex-grow-1 fs-5">{{ item.record.summary[:150] }}{% if item.record.summary|length > 150 %}...{% endif %}</p>
+                <div class="d-flex justify-content-between align-items-center mt-3 text-muted small">
+                    <span><i class="bi bi-bullseye"></i> {{ '%.1f'|format(item.record.confidence_score) }}%</span>
+                    <span><i class="bi bi-calendar3"></i> {{ item.bookmark.created_at.strftime('%Y-%m-%d') if item.bookmark.created_at else '' }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="panel mb-5">
+        <div class="panel-body text-center py-5">
+            <i class="bi bi-journal-x text-muted" style="font-size: 3rem;"></i>
+            <h5 class="mt-3 text-muted">No Intelligence Saved</h5>
+            <p class="text-muted">Explore insights and bookmark them to build your personal intelligence workspace.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Monitored Entities Section -->
+    <h3 class="mb-3 text-dark"><i class="bi bi-diagram-3"></i> Monitored Entities</h3>
+    {% if monitored_entities %}
+    <div class="row g-4 mb-5">
+        {% for item in monitored_entities %}
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="insight-card p-4 border rounded bg-white shadow-sm h-100 d-flex flex-column bookmark-card position-relative" style="cursor: pointer;" data-url="{{ url_for('entity.get_entity_by_id', entity_id=item.record.id) }}" onclick="window.location.href=this.getAttribute('data-url');">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h4 class="mb-1 text-dark">{{ item.record.name }}</h4>
+                        <span class="badge bg-light text-dark border">{{ item.record.entity_type }}</span>
+                    </div>
+                    <form action="{{ url_for('bookmarks.delete_bookmark', bookmark_id=item.bookmark.id) }}" method="POST" class="remove-btn" onclick="event.stopPropagation();">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Stop Monitoring">
+                            <i class="bi bi-x-circle"></i> Stop Monitoring
+                        </button>
+                    </form>
+                </div>
+                <p class="mb-3 text-muted flex-grow-1">{{ item.record.description[:100] }}{% if item.record.description and item.record.description|length > 100 %}...{% endif %}</p>
+                <div class="d-flex justify-content-between align-items-center mt-3 text-muted small">
+                    <span><i class="bi bi-bullseye"></i> Conf: {{ '%.1f'|format(item.record.confidence_score) }}%</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="panel mb-5">
+        <div class="panel-body text-center py-5">
+            <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
+            <h5 class="mt-3 text-muted">No Entities Monitored</h5>
+            <p class="text-muted">Track specific entities to monitor their momentum and related strategic signals.</p>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

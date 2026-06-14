@@ -41,6 +41,21 @@
                 <div class="d-flex align-items-center mb-2">
                     <h1 class="mb-0 me-3">{{ entity.name }}</h1>
                     <span class="badge bg-primary rounded-pill px-3 py-2">{{ entity.entity_type }}</span>
+                    <div class="ms-auto">
+                        {% if is_bookmarked %}
+                        <form action="{{ url_for('bookmarks.delete_bookmark', bookmark_id=bookmark_id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                ★ Monitoring
+                            </button>
+                        </form>
+                        {% else %}
+                        <form action="{{ url_for('bookmarks.bookmark_entity', entity_id=entity.id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-outline-primary rounded-pill px-4">
+                                ☆ Monitor Entity
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
                 </div>
                 <p class="text-muted mb-3">{{ entity.description }}</p>
                 <div class="d-flex gap-3 text-muted small">
@@ -78,7 +93,7 @@
                     {% if intelligence %}
                         <div class="feed-list">
                         {% for intel in intelligence %}
-                            <div class="insight-card mb-3 p-3 border rounded bg-white shadow-sm clickable-node" onclick="window.location.href='{{ url_for('intelligence.intelligence_explorer', intelligence_id=intel.id) }}';">
+                            <div class="insight-card mb-3 p-3 border rounded bg-white shadow-sm clickable-node" data-url="{{ url_for('intelligence.intelligence_explorer', intelligence_id=intel.id) }}" onclick="window.location.href=this.getAttribute('data-url');">
                                 <p class="mb-2 text-dark">{{ intel.summary }}</p>
                                 <div class="d-flex justify-content-between align-items-center mt-3">
                                     <div class="insight-tags">

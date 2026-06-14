@@ -60,6 +60,17 @@ def intelligence_explorer(intelligence_id):
     record = Intelligence.query.filter_by(id=intelligence_id, is_deleted=False).first()
     if not record:
         abort(404)
+        
+    from models.bookmark import Bookmark
+    from models.alert import Alert
+    
+    bookmark = Bookmark.query.filter_by(bookmark_type='intelligence', target_id=record.id).first()
+    is_bookmarked = bookmark is not None
+    bookmark_id = bookmark.id if bookmark else None
+    
+    # Check if this intelligence triggered any alerts for the user's monitored entities
+    alert = Alert.query.filter_by(intelligence_id=record.id).first()
+    has_alert = alert is not None
 
     # Related Entities
     related_entities = []
@@ -97,5 +108,8 @@ def intelligence_explorer(intelligence_id):
         intelligence=record,
         related_entities=related_entities,
         related_intelligence=related_intelligence,
-        strategic_signals=strategic_signals
+        strategic_signals=strategic_signals,
+        is_bookmarked=is_bookmarked,
+        bookmark_id=bookmark_id,
+        has_alert=has_alert
     )

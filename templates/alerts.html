@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Alert Center | RNIC{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<style>
+    .alert-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .alert-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+    }
+    .alert-unread {
+        border-left: 4px solid var(--primary-color) !important;
+    }
+    .alert-read {
+        opacity: 0.8;
+        background-color: #f8f9fa !important;
+    }
+    .action-btn {
+        z-index: 10;
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Alert Center</h1>
+        {% if unread_alerts %}
+        <form action="{{ url_for('alerts.mark_all_read') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-check-all"></i> Mark All as Read
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Unread Alerts Section -->
+    <h3 class="mb-3 text-dark"><i class="bi bi-bell-fill text-primary"></i> Unread Alerts</h3>
+    {% if unread_alerts %}
+    <div class="row g-4 mb-5">
+        {% for alert in unread_alerts %}
+        <div class="col-12">
+            <div class="insight-card p-4 border rounded bg-white shadow-sm alert-card alert-unread position-relative" style="cursor: pointer;" data-url="{{ url_for('intelligence.intelligence_explorer', intelligence_id=alert.intelligence_id) }}" onclick="window.location.href=this.getAttribute('data-url');">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="mb-0 text-dark fw-bold">{{ alert.title }}</h5>
+                    <form action="{{ url_for('alerts.mark_read', alert_id=alert.id) }}" method="POST" class="action-btn" onclick="event.stopPropagation();">
+                        <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            Mark as Read
+                        </button>
+                    </form>
+                </div>
+                <p class="mb-3 text-dark">{{ alert.message }}</p>
+                <div class="d-flex text-muted small">
+                    <span><i class="bi bi-clock"></i> {{ alert.created_at.strftime('%B %d, %Y - %H:%M') if alert.created_at else '' }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="panel mb-5">
+        <div class="panel-body text-center py-5">
+            <i class="bi bi-bell-slash text-muted" style="font-size: 3rem;"></i>
+            <h5 class="mt-3 text-muted">No Unread Alerts</h5>
+            <p class="text-muted">You're all caught up with your monitored entities.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Read Alerts Section -->
+    {% if read_alerts %}
+    <h3 class="mb-3 text-dark"><i class="bi bi-check2-circle"></i> Read Alerts</h3>
+    <div class="row g-4 mb-5">
+        {% for alert in read_alerts %}
+        <div class="col-12">
+            <div class="insight-card p-4 border rounded shadow-sm alert-card alert-read position-relative" style="cursor: pointer;" data-url="{{ url_for('intelligence.intelligence_explorer', intelligence_id=alert.intelligence_id) }}" onclick="window.location.href=this.getAttribute('data-url');">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="mb-0 text-muted">{{ alert.title }}</h5>
+                </div>
+                <p class="mb-3 text-muted">{{ alert.message }}</p>
+                <div class="d-flex text-muted small">
+                    <span><i class="bi bi-clock"></i> {{ alert.created_at.strftime('%B %d, %Y - %H:%M') if alert.created_at else '' }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

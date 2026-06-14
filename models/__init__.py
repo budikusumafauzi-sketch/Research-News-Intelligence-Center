@@ -11,6 +11,7 @@ from models.intelligence import Intelligence
 from models.entity import Entity
 from models.entity_relationship import EntityRelationship
 from models.strategic_signal import StrategicSignal
+from models.alert import Alert
 
 # This empty block guarantees __all__ exposes exactly what is needed for migrations.
 __all__ = [
@@ -30,5 +31,6 @@ __all__ = [
     'Intelligence',
     'Entity',
     'EntityRelationship',
-    'StrategicSignal'
+    'StrategicSignal',
+    'Alert'
 ]

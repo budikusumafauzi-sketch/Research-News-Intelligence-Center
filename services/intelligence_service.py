@@ -71,12 +71,60 @@ class IntelligenceService:
 
             logger.info(f"Intelligence generated successfully for {content_type}:{content_id} "
                         f"[confidence={confidence}, topics={len(topics)}, entities={len(entities)}]")
+                        
+            # Phase 10.5: Generate alerts for monitored entities
+            IntelligenceService._generate_alerts_for_intelligence(record)
+            
             return record
 
         except Exception as e:
             db.session.rollback()
             logger.error(f"Intelligence generation failed for {content_type}:{content_id} — {e}")
             return None
+
+    # ------------------------------------------------------------------
+    # Alert Generation logic (Phase 10.5)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _generate_alerts_for_intelligence(record: Intelligence):
+        from models.entity import Entity
+        from models.bookmark import Bookmark
+        from models.alert import Alert
+
+        if not record.entities:
+            return
+
+        alerts_created = 0
+        for entity_name in record.entities:
+            entity = Entity.query.filter_by(name=entity_name, is_deleted=False).first()
+            if not entity:
+                continue
+                
+            bookmark = Bookmark.query.filter_by(bookmark_type='entity', target_id=entity.id).first()
+            if not bookmark:
+                continue
+                
+            existing_alert = Alert.query.filter_by(entity_id=entity.id, intelligence_id=record.id).first()
+            if not existing_alert:
+                title = f"Watchlist Update: {entity.name}"
+                message = f"New intelligence involving {entity.name} has been detected."
+                new_alert = Alert(
+                    entity_id=entity.id,
+                    intelligence_id=record.id,
+                    title=title,
+                    message=message
+                )
+                db.session.add(new_alert)
+                alerts_created += 1
+        
+        if alerts_created > 0:
+            try:
+                db.session.commit()
+                logger.info(f"Generated {alerts_created} alerts for intelligence {record.id}")
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Failed to generate alerts for intelligence {record.id}: {e}")
 
     # ------------------------------------------------------------------
     # Typed convenience methods

@@ -37,6 +37,11 @@ def get_entity_by_id(entity_id):
     if not e or e.is_deleted:
         abort(404)
 
+    from models.bookmark import Bookmark
+    bookmark = Bookmark.query.filter_by(bookmark_type='entity', target_id=e.id).first()
+    is_bookmarked = bookmark is not None
+    bookmark_id = bookmark.id if bookmark else None
+
     # 1. Intelligence Context (Up to 10 recent)
     # Using string matching since entities is JSON
     recent_intel = Intelligence.query.filter(
@@ -87,7 +92,9 @@ def get_entity_by_id(entity_id):
                            related_entities=related_entities,
                            signals=signals,
                            momentum_score=momentum_score,
-                           trend_direction=trend_direction_text)
+                           trend_direction=trend_direction_text,
+                           is_bookmarked=is_bookmarked,
+                           bookmark_id=bookmark_id)
 
 @entity_bp.route('/graph', methods=['GET'])
 def get_entity_graph():
