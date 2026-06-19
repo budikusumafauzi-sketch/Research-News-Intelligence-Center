@@ -1,5 +1,6 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, render_template, abort
 from services.strategic_service import StrategicService
+from models.strategic_signal import StrategicSignal
 
 strategic_bp = Blueprint('strategic', __name__)
 
@@ -38,3 +39,9 @@ def get_competition():
         "status": "success",
         "data": [signal.to_dict() for signal in signals]
     }), 200
+
+@strategic_bp.route('/<int:signal_id>', methods=['GET'])
+def explorer(signal_id):
+    """Strategic Signal Explorer View."""
+    signal = StrategicSignal.query.get_or_404(signal_id)
+    return render_template('strategic_explorer.html', signal=signal)

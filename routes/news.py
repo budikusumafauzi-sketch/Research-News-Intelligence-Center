@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from services.news_service import NewsService
 
 news_bp = Blueprint('news', __name__)
@@ -14,6 +14,12 @@ def get_all_news():
         "published_at": n.published_at.isoformat() if n.published_at else None,
         "source": n.source.name if n.source else "Unknown"
     } for n in news_list])
+
+@news_bp.route('/feed', methods=['GET'])
+def feed():
+    """GET /news/feed"""
+    news_list = NewsService.get_latest_news(limit=50)
+    return render_template('news.html', news_list=news_list)
 
 @news_bp.route('/search', methods=['GET'])
 def search_news():

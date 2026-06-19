@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Research - RNIC{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="page-title"><i class="bi bi-journal-text"></i> Research</h1>
+    <span class="text-muted" style="font-size: 0.9rem;">Monitored Publications</span>
+</div>
+
+<div class="panel fade-in-up">
+    <div class="panel-header">
+        <h2 class="panel-title">Latest Papers</h2>
+    </div>
+    <div class="panel-body p-0">
+        {% if papers and papers|length > 0 %}
+            <div class="feed-list stagger-container">
+                {% for item in papers %}
+                <div class="feed-item stagger-item align-items-center">
+                    <div class="feed-icon research"><i class="bi bi-journal-text"></i></div>
+                    <div class="feed-content d-flex justify-content-between w-100">
+                        <div>
+                            <h6><a href="#" class="feed-title text-decoration-none">{{ item.title }}</a></h6>
+                            <div class="feed-meta mb-2">
+                                <strong>{{ item.authors }}</strong> &bull; 
+                                {{ item.source.name if item.source else 'Unknown Source' }} 
+                                &bull; 
+                                {{ item.published_at.strftime('%Y-%m-%d %H:%M') if item.published_at else 'Unknown Date' }}
+                            </div>
+                            {% if item.abstract %}
+                            <p class="small text-muted mb-0" style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
+                                {{ item.abstract }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-journal-x fs-1 mb-3 d-block opacity-50"></i>
+                <h5 class="mb-2">No Research Available</h5>
+                <p class="mb-0">The intelligence engine has not synced any research papers yet.</p>
+                <p class="small">Background workers will populate this feed automatically.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -161,10 +161,11 @@ def _register_context_processors(app):
         try:
             from models.alert import Alert
             count = Alert.query.filter_by(is_read=False).count()
-            return dict(unread_alerts_count=count)
+            recent_alerts = Alert.query.filter_by(is_read=False).order_by(Alert.created_at.desc()).limit(5).all()
+            return dict(unread_alerts_count=count, recent_alerts=recent_alerts)
         except Exception:
             # Failsafe if DB or table isn't ready
-            return dict(unread_alerts_count=0)
+            return dict(unread_alerts_count=0, recent_alerts=[])
 
 def _register_blueprints(app):
     """Register all application blueprints."""

@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from services.research_service import ResearchService
 
 research_bp = Blueprint('research', __name__)
@@ -9,6 +9,12 @@ def get_all_research():
     """GET /research — Returns the 50 most recent research papers."""
     papers = ResearchService.get_latest_papers(limit=50)
     return jsonify([_serialize(p) for p in papers])
+
+@research_bp.route('/feed', methods=['GET'])
+def feed():
+    """GET /research/feed"""
+    papers = ResearchService.get_latest_papers(limit=50)
+    return render_template('research.html', papers=papers)
 
 
 @research_bp.route('/latest', methods=['GET'])

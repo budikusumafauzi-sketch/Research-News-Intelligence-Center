@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - RNIC{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="page-title"><i class="bi bi-gear"></i> Settings & System Info</h1>
+    <span class="text-muted" style="font-size: 0.9rem;">Application Status</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="panel fade-in-up">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="bi bi-info-circle text-primary me-2"></i> Application Information</h2>
+            </div>
+            <div class="panel-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 border-light">
+                        <span class="text-muted fw-medium">Current RNIC Version</span>
+                        <span class="badge bg-primary rounded-pill">v0.8</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 border-light">
+                        <span class="text-muted fw-medium">Flask Environment</span>
+                        <span class="badge bg-secondary rounded-pill">Development</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 border-light">
+                        <span class="text-muted fw-medium">Database Type</span>
+                        <span class="text-dark fw-bold">SQLite (Local)</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="panel fade-in-up" style="animation-delay: 0.1s;">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="bi bi-hdd-network text-primary me-2"></i> System Status</h2>
+            </div>
+            <div class="panel-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 border-light">
+                        <span class="text-muted fw-medium">Alert Engine</span>
+                        <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Active</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 border-light">
+                        <span class="text-muted fw-medium">Scheduler</span>
+                        <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Running</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 border-light">
+                        <span class="text-muted fw-medium">Intelligence Engine</span>
+                        <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Online</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-12">
+        <div class="panel fade-in-up" style="animation-delay: 0.2s;">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="bi bi-pie-chart text-primary me-2"></i> Intelligence Statistics</h2>
+            </div>
+            <div class="panel-body">
+                <div class="row text-center g-3 mt-1">
+                    <div class="col-sm-3">
+                        <div class="p-4 border rounded bg-light">
+                            <h3 class="text-primary fw-bold mb-1">{{ stats.intelligence }}</h3>
+                            <span class="text-muted small text-uppercase">Records</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="p-4 border rounded bg-light">
+                            <h3 class="text-primary fw-bold mb-1">{{ stats.entities }}</h3>
+                            <span class="text-muted small text-uppercase">Entities</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="p-4 border rounded bg-light">
+                            <h3 class="text-primary fw-bold mb-1">{{ stats.alerts }}</h3>
+                            <span class="text-muted small text-uppercase">Alerts</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="p-4 border rounded bg-light">
+                            <h3 class="text-primary fw-bold mb-1">{{ stats.watchlists }}</h3>
+                            <span class="text-muted small text-uppercase">Watchlists</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -105,6 +105,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         window.trendingChartInstance = trendingChart;
+
+        // Phase 10.5.2 - Export Chart Logic
+        const btnPng = document.getElementById('exportPngBtn');
+        if (btnPng) {
+            btnPng.addEventListener('click', () => {
+                const link = document.createElement('a');
+                link.download = 'trending-topics.png';
+                link.href = trendingChart.toBase64Image();
+                link.click();
+            });
+        }
+
+        const btnCsv = document.getElementById('exportCsvBtn');
+        if (btnCsv) {
+            btnCsv.addEventListener('click', () => {
+                let csv = 'Topic,' + trendingChart.data.labels.join(',') + '\n';
+                trendingChart.data.datasets.forEach(ds => {
+                    csv += `"${ds.label}",` + ds.data.join(',') + '\n';
+                });
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const link = document.createElement('a');
+                link.download = 'trending-topics.csv';
+                link.href = URL.createObjectURL(blob);
+                link.click();
+            });
+        }
     }
 });
 
@@ -171,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.warn('WARNING: Dashboard refresh failed (non-200 response).');
             }
-            
+
             // Also refresh analytics
             await refreshAnalytics();
         } catch (error) {
@@ -186,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch('/analytics/momentum').catch(() => null),
                 fetch('/analytics/emerging').catch(() => null)
             ]);
-            
+
             if (trendsRes && trendsRes.ok) {
                 const data = await trendsRes.json();
                 updateTrendsChart(data.trends || []);
@@ -206,20 +232,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateTrendsChart(trends) {
         if (!window.trendingChartInstance || trends.length === 0) return;
-        
+
         // Update the chart with new labels and data
         const labels = trends.slice(0, 7).map(t => t.topic.length > 15 ? t.topic.substring(0, 15) + '...' : t.topic);
         const data = trends.slice(0, 7).map(t => t.score);
-        
+
         window.trendingChartInstance.data.labels = labels;
         window.trendingChartInstance.data.datasets[0].data = data;
         window.trendingChartInstance.data.datasets[0].label = 'Top Trends Velocity';
-        
+
         // Hide secondary dataset as we are now plotting top trends dynamically
-        if(window.trendingChartInstance.data.datasets.length > 1) {
+        if (window.trendingChartInstance.data.datasets.length > 1) {
             window.trendingChartInstance.data.datasets[1].hidden = true;
         }
-        
+
         window.trendingChartInstance.update();
     }
 
@@ -240,12 +266,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let html = '';
         momentumData.slice(0, 5).forEach((item, index) => {
-            const icon = item.direction === 'up' ? '<i class="bi bi-graph-up-arrow text-success"></i>' : 
-                         item.direction === 'down' ? '<i class="bi bi-graph-down-arrow text-danger"></i>' : 
-                         '<i class="bi bi-dash text-muted"></i>';
+            const icon = item.direction === 'up' ? '<i class="bi bi-graph-up-arrow text-success"></i>' :
+                item.direction === 'down' ? '<i class="bi bi-graph-down-arrow text-danger"></i>' :
+                    '<i class="bi bi-dash text-muted"></i>';
             html += `
             <div class="feed-item align-items-center">
-                <div class="feed-icon" style="background: rgba(0,0,0,0.05); color: #1F2937; font-weight: bold; font-size: 0.8rem;">#${index+1}</div>
+                <div class="feed-icon" style="background: rgba(0,0,0,0.05); color: #1F2937; font-weight: bold; font-size: 0.8rem;">#${index + 1}</div>
                 <div class="feed-content d-flex justify-content-between w-100">
                     <div>
                         <h6 class="mb-0 text-dark">${item.entity}</h6>
@@ -382,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Refresh every 60 seconds
     setInterval(refreshDashboard, 60000);
-    
+
     // Initial fetch for analytics
     setTimeout(refreshAnalytics, 1500);
 });

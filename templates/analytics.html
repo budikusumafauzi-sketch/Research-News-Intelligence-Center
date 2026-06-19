@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - RNIC{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="page-title"><i class="bi bi-bar-chart"></i> Analytics Dashboard</h1>
+    <span class="text-muted" style="font-size: 0.9rem;">Intelligence Insights & Trends</span>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="panel fade-in-up">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="bi bi-graph-up text-primary me-2"></i> Entity Momentum</h2>
+            </div>
+            <div class="panel-body">
+                {% if momentum and momentum|length > 0 %}
+                    <div class="feed-list">
+                        {% for item in momentum %}
+                        <div class="feed-item align-items-center px-0">
+                            <div class="feed-icon" style="background: rgba(0,0,0,0.05); color: #1F2937; font-weight: bold; font-size: 0.8rem;">#{{ loop.index }}</div>
+                            <div class="feed-content d-flex justify-content-between w-100">
+                                <div>
+                                    <h6 class="mb-0 text-dark">{{ item.entity }}</h6>
+                                    <div class="feed-meta">Score: {{ item.momentum_score }}</div>
+                                </div>
+                                <div class="fs-5">
+                                    {% if item.direction == 'up' %}
+                                        <i class="bi bi-graph-up-arrow text-success"></i>
+                                    {% elif item.direction == 'down' %}
+                                        <i class="bi bi-graph-down-arrow text-danger"></i>
+                                    {% else %}
+                                        <i class="bi bi-dash text-muted"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-rocket fs-2 mb-2 d-block"></i>
+                        <p class="mb-0 small">No momentum data yet.</p>
+                        <p class="small">Will populate after analytics engine runs.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="panel fade-in-up" style="animation-delay: 0.1s;">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="bi bi-cpu text-primary me-2"></i> Emerging Technologies</h2>
+            </div>
+            <div class="panel-body">
+                {% if emerging and emerging|length > 0 %}
+                    <div class="feed-list">
+                        {% for item in emerging %}
+                        <div class="feed-item align-items-center px-0">
+                            <div class="feed-icon news"><i class="bi bi-lightning-charge-fill text-warning"></i></div>
+                            <div class="feed-content d-flex justify-content-between w-100">
+                                <div>
+                                    <h6 class="mb-0 text-dark">{{ item.technology }}</h6>
+                                    <div class="feed-meta">Mentions: {{ item.recent_mentions }}</div>
+                                </div>
+                                <div>
+                                    <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50">{{ item.ratio }}x Growth</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-cpu fs-2 mb-2 d-block"></i>
+                        <p class="mb-0 small">No emerging tech detected.</p>
+                        <p class="small">Will populate after analytics engine runs.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12">
+        <div class="panel fade-in-up" style="animation-delay: 0.2s;">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="bi bi-bar-chart-steps text-primary me-2"></i> Trending Topics</h2>
+            </div>
+            <div class="panel-body">
+                {% if trends and trends|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="text-muted small text-uppercase">Topic</th>
+                                    <th class="text-muted small text-uppercase text-end">Velocity Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in trends %}
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <td class="fw-medium py-3">{{ item.topic }}</td>
+                                    <td class="text-end py-3">
+                                        <span class="badge bg-light text-dark border">{{ item.score }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="p-5 text-center text-muted">
+                        <i class="bi bi-bar-chart fs-1 mb-3 d-block opacity-50"></i>
+                        <h5 class="mb-2">No Trending Data</h5>
+                        <p class="mb-0">The analytics engine has not synced trend data yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

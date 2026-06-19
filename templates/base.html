@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,17 +9,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     <div class="app-wrapper">
         <!-- Sidebar -->
@@ -32,23 +34,36 @@
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
-            
+
             <nav class="sidebar-nav">
-                <a href="#" class="nav-item active"><i class="bi bi-grid-1x2"></i> Dashboard</a>
-                <a href="#" class="nav-item"><i class="bi bi-newspaper"></i> News Feed</a>
-                <a href="#" class="nav-item"><i class="bi bi-journal-text"></i> Research</a>
-                <a href="#" class="nav-item"><i class="bi bi-bar-chart"></i> Analytics</a>
-                <a href="{{ url_for('bookmarks.index') }}" class="nav-item {% if request.path.startswith('/bookmarks') %}active{% endif %}"><i class="bi bi-bookmark-star"></i> Watchlist</a>
-                <a href="{{ url_for('alerts.index') }}" class="nav-item d-flex justify-content-between align-items-center {% if request.path.startswith('/alerts') %}active{% endif %}">
+                <a href="{{ url_for('dashboard.index') }}"
+                    class="nav-item {% if request.path == '/' %}active{% endif %}"><i class="bi bi-grid-1x2"></i>
+                    Dashboard</a>
+                <a href="{{ url_for('news.feed') }}"
+                    class="nav-item {% if request.path.startswith('/news') %}active{% endif %}"><i
+                        class="bi bi-newspaper"></i> News Feed</a>
+                <a href="{{ url_for('research.feed') }}"
+                    class="nav-item {% if request.path.startswith('/research') %}active{% endif %}"><i
+                        class="bi bi-journal-text"></i> Research</a>
+                <a href="{{ url_for('analytics.dashboard') }}"
+                    class="nav-item {% if request.path.startswith('/analytics') %}active{% endif %}"><i
+                        class="bi bi-bar-chart"></i> Analytics</a>
+                <a href="{{ url_for('bookmarks.index') }}"
+                    class="nav-item {% if request.path.startswith('/bookmarks') %}active{% endif %}"><i
+                        class="bi bi-bookmark-star"></i> Watchlist</a>
+                <a href="{{ url_for('alerts.index') }}"
+                    class="nav-item d-flex justify-content-between align-items-center {% if request.path.startswith('/alerts') %}active{% endif %}">
                     <span><i class="bi bi-bell"></i> Alerts</span>
                     {% if unread_alerts_count and unread_alerts_count > 0 %}
                     <span class="badge bg-danger rounded-pill">{{ unread_alerts_count }}</span>
                     {% endif %}
                 </a>
             </nav>
-            
+
             <div class="sidebar-footer">
-                <a href="#" class="nav-item"><i class="bi bi-gear"></i> Settings</a>
+                <a href="{{ url_for('dashboard.settings') }}"
+                    class="nav-item {% if request.path.startswith('/settings') %}active{% endif %}"><i
+                        class="bi bi-gear"></i> Settings</a>
                 <div class="sidebar-profile">
                     <div class="avatar" style="color:#FFF;">FB</div>
                     <div class="sidebar-profile-info">
@@ -63,30 +78,100 @@
         <main class="main-content">
             <!-- Top Navigation -->
             <header class="top-nav">
-                <div class="nav-left">
+                <div class="nav-left flex-grow-1 me-3">
                     <button class="btn-toggle-sidebar d-md-none" id="toggleSidebar" aria-label="Toggle Sidebar">
                         <i class="bi bi-list"></i>
                     </button>
-                    <form action="{{ url_for('search.search') }}" method="GET" class="global-search d-none d-md-flex" id="globalSearchForm">
-                        <i class="bi bi-search search-icon"></i>
-                        <input type="text" name="q" value="{{ request.args.get('q', '') }}" placeholder="Search entities, topics, or insights..." required>
-                        <button type="button" class="btn-clear-search" id="clearSearchBtn" aria-label="Clear Search"><i class="bi bi-x-circle-fill"></i></button>
-                        <select name="type" class="search-filter" aria-label="Filter Search">
-                            <option value="all" {% if request.args.get('type') == 'all' %}selected{% endif %}>All</option>
-                            <option value="intelligence" {% if request.args.get('type') == 'intelligence' %}selected{% endif %}>Intelligence</option>
-                            <option value="entities" {% if request.args.get('type') == 'entities' %}selected{% endif %}>Entities</option>
-                            <option value="strategic_signals" {% if request.args.get('type') == 'strategic_signals' %}selected{% endif %}>Strategic Signals</option>
-                        </select>
-                        <button type="submit" class="btn-search">Search</button>
+                    <form action="{{ url_for('search.search') }}" method="GET"
+                        class="global-search d-none d-md-flex w-100 p-0 m-0 bg-transparent border-0"
+                        style="max-width: 700px;" id="globalSearchForm">
+                        <div class="d-flex w-100 gap-2">
+                            <div class="d-flex align-items-center flex-grow-1 bg-surface border"
+                                style="border-radius: 50px; padding: 0.35rem 1rem; background-color: var(--surface); border-color: var(--border) !important; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                                <i class="bi bi-search text-muted me-2" style="font-size: 1.1rem;"></i>
+                                <input type="text" class="form-control border-0 bg-transparent shadow-none px-1"
+                                    name="q" value="{{ request.args.get('q', '') }}"
+                                    placeholder="Search entities, topics, or insights..." required
+                                    style="min-width: 0;">
+                                <div class="vr mx-2 text-muted opacity-25" style="height: 24px; align-self: center;">
+                                </div>
+                                <select name="type"
+                                    class="form-select border-0 bg-transparent text-muted shadow-none py-0 pe-4"
+                                    style="width: auto; cursor: pointer; font-size: 0.9rem; font-weight: 500;"
+                                    aria-label="Filter Search">
+                                    <option value="all" {% if request.args.get('type')=='all' %}selected{% endif %}>All
+                                    </option>
+                                    <option value="intelligence" {% if request.args.get('type')=='intelligence'
+                                        %}selected{% endif %}>Intelligence</option>
+                                    <option value="entities" {% if request.args.get('type')=='entities' %}selected{%
+                                        endif %}>Entities</option>
+                                    <option value="strategic_signals" {% if
+                                        request.args.get('type')=='strategic_signals' %}selected{% endif %}>Strategic
+                                        Signals</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary btn-search rounded-pill px-4 fw-medium"
+                                type="submit">Search</button>
+                        </div>
                     </form>
                 </div>
                 <div class="nav-right">
-                    <button class="btn-icon" aria-label="Notifications">
-                        <i class="bi bi-bell"></i>
-                        <span class="badge-indicator"></span>
-                    </button>
-                    <div class="profile-dropdown">
-                        <div class="avatar" style="color:#FFF;">FB</div>
+                    <div class="dropdown d-inline-block">
+                        <button class="btn-icon dropdown-toggle" type="button" id="notificationDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false" style="border: none;">
+                            <i class="bi bi-bell"></i>
+                            {% if unread_alerts_count and unread_alerts_count > 0 %}
+                            <span class="badge-indicator"></span>
+                            {% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="width: 300px; padding: 0;"
+                            aria-labelledby="notificationDropdown">
+                            <li class="dropdown-header bg-light border-bottom py-2 fw-bold text-dark">Recent Alerts</li>
+                            {% if recent_alerts and recent_alerts|length > 0 %}
+                            {% for alert in recent_alerts %}
+                            <li>
+                                <a class="dropdown-item py-2 border-bottom" href="{{ url_for('alerts.index') }}">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1 text-truncate" style="font-size: 0.85rem;">{{ alert.message }}
+                                        </h6>
+                                    </div>
+                                    <small class="text-muted" style="font-size: 0.7rem;">
+                                        <i class="bi bi-clock"></i> {{ alert.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                    </small>
+                                </a>
+                            </li>
+                            {% endfor %}
+                            {% else %}
+                            <li><span class="dropdown-item py-3 text-center text-muted small">No new
+                                    notifications</span></li>
+                            {% endif %}
+                            <li>
+                                <a class="dropdown-item text-center text-primary fw-medium py-2 bg-light"
+                                    href="{{ url_for('alerts.index') }}">View All Alerts</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="dropdown profile-dropdown">
+                        <div class="avatar dropdown-toggle" id="avatarDropdown" data-bs-toggle="dropdown"
+                            aria-expanded="false" style="color:#FFF; cursor:pointer;" role="button">FB</div>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="avatarDropdown">
+                            <li>
+                                <h6 class="dropdown-header">Profile Info</h6>
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard.profile') }}"><i
+                                        class="bi bi-person me-2 text-muted"></i>My Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('bookmarks.index') }}"><i
+                                        class="bi bi-bookmark-star me-2 text-muted"></i>Watchlist</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('alerts.index') }}"><i
+                                        class="bi bi-bell me-2 text-muted"></i>Alerts</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard.settings') }}"><i
+                                        class="bi bi-gear me-2 text-muted"></i>Settings</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><span class="dropdown-item-text text-muted small text-center w-100 d-block">RNIC
+                                    Version: v0.9 Candidate</span></li>
+                        </ul>
                     </div>
                 </div>
             </header>
@@ -106,7 +191,7 @@
         const toggleBtn = document.getElementById('toggleSidebar');
         const closeBtn = document.getElementById('closeSidebar');
 
-        if(toggleBtn && closeBtn) {
+        if (toggleBtn && closeBtn) {
             toggleBtn.addEventListener('click', () => {
                 sidebar.classList.add('show');
             });
@@ -118,7 +203,7 @@
         // Search clear logic
         const clearBtn = document.getElementById('clearSearchBtn');
         const searchForm = document.getElementById('globalSearchForm');
-        if(clearBtn && searchForm) {
+        if (clearBtn && searchForm) {
             clearBtn.addEventListener('click', () => {
                 searchForm.querySelector('input[name="q"]').value = '';
                 searchForm.querySelector('select[name="type"]').value = 'all';
@@ -131,4 +216,5 @@
     </script>
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

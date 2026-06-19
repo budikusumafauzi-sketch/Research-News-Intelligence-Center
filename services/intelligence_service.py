@@ -207,3 +207,58 @@ class IntelligenceService:
             content_id=content_id,
             is_deleted=False
         ).first()
+
+    @staticmethod
+    def get_latest_feed(limit=15):
+
+        news = News.query.order_by(
+            News.published_at.desc()
+        ).limit(8).all()
+
+        research = ResearchPaper.query.order_by(
+            ResearchPaper.published_at.desc()
+        ).limit(8).all()
+
+        print("JUMLAH RESEARCH:", len(research))
+
+        for r in research:
+            print("RESEARCH:", r.title)
+
+        feed = []
+
+        for n in news:
+
+            print("NEWS TITLE:", n.title)
+            print("NEWS URL:", n.original_url)
+            print("NEWS SOURCE:", n.source.name if n.source else "Unknown")
+            print("--------------------------------")
+
+            feed.append({
+                "title": n.title,
+                "original_url": n.original_url,
+                "published_at": n.published_at,
+                "source_name": n.source.name if n.source else "Unknown",
+                "content_type": "news"
+            })
+
+
+        for r in research:
+
+            print("RESEARCH TITLE:", r.title)
+            print("RESEARCH DATE:", r.published_at)
+            print("--------------------------------")
+
+            feed.append({
+                "title": r.title,
+                "original_url": "#",
+                "published_at": r.published_at,
+                "source_name": "Research",
+                "content_type": "research"
+            })
+
+        feed.sort(
+            key=lambda x: x["published_at"],
+            reverse=True
+        )
+
+        return feed

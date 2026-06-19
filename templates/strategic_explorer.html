@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Strategic Signal Explorer - RNIC{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary btn-sm mb-3">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+    <h1 class="page-title"><i class="bi bi-lightbulb text-warning"></i> Strategic Signal Explorer</h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="panel fade-in-up">
+            <div class="panel-header">
+                <h5 class="panel-title">{{ signal.title }}</h5>
+                <span class="badge bg-light text-dark border">{{ signal.signal_type }}</span>
+            </div>
+            <div class="panel-body">
+                <p class="fs-5">{{ signal.description }}</p>
+                <hr>
+                <div class="d-flex justify-content-between text-muted small">
+                    <span><strong>Confidence:</strong> {{ '%.0f'|format(signal.confidence_score) }}%</span>
+                    <span><strong>Detected:</strong> {{ signal.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel fade-in-up" style="animation-delay: 0.1s;">
+            <div class="panel-header">
+                <h5 class="panel-title">Related Intelligence</h5>
+            </div>
+            <div class="panel-body p-0">
+                <div class="feed-list">
+                    {% if signal.intelligence %}
+                        {% for intel in signal.intelligence %}
+                        <div class="feed-item clickable-node" onclick="window.location.href=`{{ url_for('intelligence.intelligence_explorer', intelligence_id=intel.id) }}`;">
+                            <div class="feed-icon {{ intel.content_type }}">
+                                <i class="bi bi-journal-text"></i>
+                            </div>
+                            <div class="feed-content">
+                                <h6>{{ intel.summary[:100] }}...</h6>
+                                <div class="feed-meta">{{ intel.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="p-4 text-center text-muted">
+                            <p class="mb-0 small">No related intelligence found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel fade-in-up" style="animation-delay: 0.2s;">
+            <div class="panel-header">
+                <h5 class="panel-title">Related Entities</h5>
+            </div>
+            <div class="panel-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% if signal.entities %}
+                        {% for entity in signal.entities %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-light py-3 clickable-node" onclick="window.location.href=`{{ url_for('entity.get_entity_by_id', entity_id=entity.id) }}`;">
+                            <div>
+                                <h6 class="mb-0">{{ entity.name }}</h6>
+                                <small class="text-muted">{{ entity.type }}</small>
+                            </div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="list-group-item bg-transparent text-muted text-center py-4 small border-0">No related entities mapped.</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

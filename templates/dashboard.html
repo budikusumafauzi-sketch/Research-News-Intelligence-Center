@@ -80,13 +80,30 @@
 <div class="row g-4 mb-4">
     <!-- Trending Topics Line Chart -->
     <div class="col-12 col-xl-8 fade-in-up">
-        <div class="panel">
+        <div class="panel chart-panel">
             <div class="panel-header">
                 <h5 class="panel-title">Trending Topics Velocity</h5>
-                <button class="btn-sm-outline" aria-label="More options"><i class="bi bi-three-dots"></i></button>
+                <div class="dropdown">
+                    <button class="btn-sm-outline dropdown-toggle" type="button" id="trendingDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false" style="border:none; background:transparent;"
+                        aria-label="More options">
+                        <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="trendingDropdown">
+                        <li><button class="dropdown-item" id="exportPngBtn"><i
+                                    class="bi bi-file-image me-2 text-muted"></i>Export PNG</button></li>
+                        <li><button class="dropdown-item" id="exportCsvBtn"><i
+                                    class="bi bi-file-earmark-spreadsheet me-2 text-muted"></i>Export CSV</button></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="{{ url_for('analytics.dashboard') }}"><i
+                                    class="bi bi-bar-chart me-2 text-muted"></i>Open Analytics Dashboard</a></li>
+                    </ul>
+                </div>
             </div>
             <div class="panel-body pb-0">
-                <div class="chart-container" style="position: relative; flex: 1; min-height: 220px; width: 100%;">
+                <div class="chart-container" style="height:250px; width:100%;">
                     <canvas id="trendingChart"></canvas>
                 </div>
             </div>
@@ -142,137 +159,159 @@
     </div>
 </div>
 
-<div class="row g-4 mb-4">
-    <!-- Knowledge Graph Preview UI -->
+<div class="row g-4 mb-4 align-items-start">
+
+    <!-- Knowledge Graph -->
     <div class="col-12 col-lg-6 fade-in-up">
-        <div class="panel">
+        <div class="panel knowledge-panel">
+
             <div class="panel-header">
-                <h5 class="panel-title">Knowledge Graph (Top Entities)</h5>
-                <a href="#" class="view-all">Expand Graph <i class="bi bi-arrow-right"></i></a>
+                <h5 class="panel-title">
+                    Knowledge Graph (Top Entities)
+                </h5>
+
+                <a href="{{ url_for('entity.get_entities') }}" class="view-all">
+                    Expand Graph <i class="bi bi-arrow-right"></i>
+                </a>
             </div>
-            <div class="panel-body p-0">
-                <div class="graph-preview">
-                    {% if entity_graph and entity_graph.nodes %}
-                    <svg class="graph-lines" style="width: 100%; height: 100%;">
-                        {% set pos = [
-                        {'x': 50, 'y': 50},
-                        {'x': 50, 'y': 25},
-                        {'x': 50, 'y': 75},
-                        {'x': 25, 'y': 50},
-                        {'x': 75, 'y': 50}
-                        ] %}
 
-                        {% for link in entity_graph.links %}
-                        {% set ns = namespace(source_idx=-1, target_idx=-1) %}
-                        {% for i in range(entity_graph.nodes|length) %}
-                        {% if entity_graph.nodes[i].id == link.source %}{% set ns.source_idx = i %}{% endif %}
-                        {% if entity_graph.nodes[i].id == link.target %}{% set ns.target_idx = i %}{% endif %}
-                        {% endfor %}
+            <div class="panel-body">
 
-                        {% if ns.source_idx >= 0 and ns.target_idx >= 0 and ns.source_idx
-                        < 5 and ns.target_idx < 5 %} <line x1="{{ pos[ns.source_idx].x }}%"
-                            y1="{{ pos[ns.source_idx].y }}%" x2="{{ pos[ns.target_idx].x }}%"
-                            y2="{{ pos[ns.target_idx].y }}%" class="line" />
-                        <!-- Relationship Label -->
-                        <text x="{{ (pos[ns.source_idx].x + pos[ns.target_idx].x) / 2 }}%"
-                            y="{{ (pos[ns.source_idx].y + pos[ns.target_idx].y) / 2 - 2 }}%" fill="#B3B3B3"
-                            font-size="10" text-anchor="middle" font-family="monospace">
-                            {{ link.type }}
-                        </text>
-                        {% endif %}
-                        {% endfor %}
-                    </svg>
+                <div class="knowledge-tree">
 
-                    {% set classes = ['node-center pulse-glow', 'node-top', 'node-bottom', 'node-left', 'node-right'] %}
+                    <ul>
+                        <li>
 
-                    {% for node in entity_graph.nodes[:5] %}
-                    <div class="node {{ classes[loop.index0] }} clickable-node"
-                        title="{{ node.type }} - Score: {{ '%.0f'|format(node.confidence) }}"
-                        data-url="{{ url_for('entity.get_entity_by_id', entity_id=node.id) }}"
-                        onclick="window.location.href=this.dataset.url;">
+                            <div class="entity-card">
+                                <img src="{{ url_for('static', filename='img/logos/amazon.png') }}">
+                                <span>Amazon</span>
+                            </div>
 
-                        {% set raw_name = node.name.lower() %}
+                            <ul>
 
-                        {% if 'google' in raw_name %}
-                        {% set logo_file = 'google.png' %}
-                        {% elif 'apple' in raw_name %}
-                        {% set logo_file = 'apple.png' %}
-                        {% elif 'microsoft' in raw_name %}
-                        {% set logo_file = 'microsoft.png' %}
-                        {% elif 'amazon' in raw_name %}
-                        {% set logo_file = 'amazon.png' %}
-                        {% elif 'spacex' in raw_name %}
-                        {% set logo_file = 'spacex.png' %}
-                        {% else %}
-                        {% set logo_file = raw_name|replace(' ', '') ~ '.png' %}
-                        {% endif %}
+                                <li>
 
-                        <img src="{{ url_for('static', filename='img/logos/' ~ logo_file) }}" class="node-logo"
-                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" alt="">
+                                    <div class="entity-card">
+                                        <img src="{{ url_for('static', filename='img/logos/apple.png') }}">
+                                        <span>Apple</span>
+                                    </div>
 
-                        <div class="node-initials" style="display:none;">
-                            {{ node.name[:2] | upper }}
-                        </div>
+                                    <ul>
+                                        <li>
+                                            <div class="entity-card">
+                                                <img src="{{ url_for('static', filename='img/logos/intel.png') }}">
+                                                <span>Intel</span>
+                                            </div>
+                                        </li>
 
-                        <span>{{ node.name }}</span>
-                    </div>
-                    {% endfor %}
-                    {% else %}
-                    <div class="p-4 text-center text-muted"
-                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;">
-                        <i class="bi bi-diagram-3 fs-2 mb-2 d-block"></i>
-                        <p class="mb-0 small">No entities discovered yet.</p>
-                        <p class="small">The knowledge graph will populate automatically.</p>
-                    </div>
-                    {% endif %}
+                                        <li>
+                                            <div class="entity-card">
+                                                <img src="{{ url_for('static', filename='img/logos/meta.png') }}">
+                                                <span>Meta</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+
+                                </li>
+
+                                <li>
+
+                                    <div class="entity-card">
+                                        <img src="{{ url_for('static', filename='img/logos/google.png') }}">
+                                        <span>Google</span>
+                                    </div>
+
+                                    <ul>
+                                        <li>
+                                            <div class="entity-card">
+                                                <img src="{{ url_for('static', filename='img/logos/spacex.png') }}">
+                                                <span>SpaceX</span>
+                                            </div>
+                                        </li>
+
+                                        <li>
+                                            <div class="entity-card">
+                                                <img src="{{ url_for('static', filename='img/logos/microsoft.png') }}">
+                                                <span>Microsoft</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+
+                                </li>
+
+                            </ul>
+
+                        </li>
+                    </ul>
+
                 </div>
+
             </div>
+
         </div>
     </div>
 
-    <!-- Live Aggregated Feed -->
+    <!-- Intelligence Feed -->
     <div class="col-12 col-lg-6 fade-in-up">
         <div class="panel">
+
             <div class="panel-header">
                 <h5 class="panel-title">Intelligence Feed</h5>
-                <div class="filter-group">
-                    <button class="btn-filter active">All</button>
-                    <button class="btn-filter">News</button>
-                    <button class="btn-filter">Research</button>
+
+                <div class="filter-group" id="feedFilterGroup">
+                    <button class="btn-filter active" data-filter="all">All</button>
+                    <button class="btn-filter" data-filter="news">News</button>
+                    <button class="btn-filter" data-filter="research">Research</button>
                 </div>
             </div>
+
             <div class="panel-body p-0">
-                <div class="feed-list" id="newsFeedList">
-                    {% if latest_news %}
-                    {% for item in latest_news %}
-                    <div class="feed-item">
-                        <div class="feed-icon news"><i class="bi bi-newspaper"></i></div>
+
+                <div class="feed-list scroll-feed" id="intelligenceFeedList">
+
+                    {% if latest_feed %}
+                    {% for item in latest_feed %}
+
+                    <div class="feed-item" data-content-type="{{ item.content_type }}">
+
+                        <div class="feed-icon {{ item.content_type }}">
+                            {% if item.content_type == 'news' %}
+                            <i class="bi bi-newspaper"></i>
+                            {% else %}
+                            <i class="bi bi-journal-text"></i>
+                            {% endif %}
+                        </div>
+
                         <div class="feed-content">
+
                             <h6>
                                 <a href="{{ item.original_url }}" target="_blank"
                                     class="feed-title text-decoration-none">
                                     {{ item.title }}
                                 </a>
                             </h6>
-                            <div class="feed-meta">{{ item.source.name if item.source else 'Unknown Source' }} • {{
-                                item.published_at.strftime('%Y-%m-%d %H:%M') if item.published_at else 'Just now' }}
+
+                            <div class="feed-meta">
+                                {{ item.source_name }}
+                                •
+                                {{ item.published_at.strftime('%Y-%m-%d %H:%M') if item.published_at else 'Just now' }}
                             </div>
+
                         </div>
+
                     </div>
+
                     {% endfor %}
-                    {% else %}
-                    <div class="p-4 text-center text-muted">
-                        <i class="bi bi-inbox fs-2 mb-2 d-block"></i>
-                        <p class="mb-0 small">No intelligence gathered yet.</p>
-                        <p class="small">The background worker will sync shortly.</p>
-                    </div>
                     {% endif %}
+
                 </div>
+
             </div>
+
         </div>
     </div>
-</div>
 
+</div>
 <!-- Phase 8: Strategic Intelligence Section -->
 <div class="row g-4 mb-4">
     <div class="col-12 fade-in-up">
@@ -288,10 +327,12 @@
             <div class="panel-body p-3">
                 {% if opportunities %}
                 {% for opp in opportunities %}
-                <div class="insight-card mb-3">
+                <div class="insight-card mb-3 clickable-node"
+                    onclick="window.location.href=`{{ url_for('strategic.explorer', signal_id=opp.id) }}`;">
                     <h6 class="mb-1" style="font-size:0.9rem;">{{ opp.title }}</h6>
                     <p class="small text-muted mb-2">{{ opp.description }}</p>
-                    <span class="tag sentiment-pos">Confidence: {{ '%.0f'|format(opp.confidence_score) }}%</span>
+                    <span class="tag sentiment-pos">Confidence: {{ '%.0f'|format(opp.confidence_score)
+                        }}%</span>
                 </div>
                 {% endfor %}
                 {% else %}
@@ -310,10 +351,12 @@
             <div class="panel-body p-3">
                 {% if risks %}
                 {% for risk in risks %}
-                <div class="insight-card mb-3">
+                <div class="insight-card mb-3 clickable-node"
+                    onclick="window.location.href=`{{ url_for('strategic.explorer', signal_id=risk.id) }}`;">
                     <h6 class="mb-1" style="font-size:0.9rem;">{{ risk.title }}</h6>
                     <p class="small text-muted mb-2">{{ risk.description }}</p>
-                    <span class="tag sentiment-neg">Confidence: {{ '%.0f'|format(risk.confidence_score) }}%</span>
+                    <span class="tag sentiment-neg">Confidence: {{ '%.0f'|format(risk.confidence_score)
+                        }}%</span>
                 </div>
                 {% endfor %}
                 {% else %}
@@ -332,10 +375,12 @@
             <div class="panel-body p-3">
                 {% if trends %}
                 {% for trend in trends %}
-                <div class="insight-card mb-3">
+                <div class="insight-card mb-3 clickable-node"
+                    onclick="window.location.href=`{{ url_for('strategic.explorer', signal_id=trend.id) }}`;">
                     <h6 class="mb-1" style="font-size:0.9rem;">{{ trend.title }}</h6>
                     <p class="small text-muted mb-2">{{ trend.description }}</p>
-                    <span class="tag sentiment-neu">Confidence: {{ '%.0f'|format(trend.confidence_score) }}%</span>
+                    <span class="tag sentiment-neu">Confidence: {{ '%.0f'|format(trend.confidence_score)
+                        }}%</span>
                 </div>
                 {% endfor %}
                 {% else %}
@@ -354,10 +399,12 @@
             <div class="panel-body p-3">
                 {% if competition %}
                 {% for comp in competition %}
-                <div class="insight-card mb-3">
+                <div class="insight-card mb-3 clickable-node"
+                    onclick="window.location.href=`{{ url_for('strategic.explorer', signal_id=comp.id) }}`;">
                     <h6 class="mb-1" style="font-size:0.9rem;">{{ comp.title }}</h6>
                     <p class="small text-muted mb-2">{{ comp.description }}</p>
-                    <span class="tag sentiment-warn">Confidence: {{ '%.0f'|format(comp.confidence_score) }}%</span>
+                    <span class="tag sentiment-warn">Confidence: {{ '%.0f'|format(comp.confidence_score)
+                        }}%</span>
                 </div>
                 {% endfor %}
                 {% else %}

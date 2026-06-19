@@ -266,7 +266,55 @@ class EntityService:
         return Entity.query.filter_by(is_deleted=False).order_by(Entity.confidence_score.desc()).limit(limit).all()
 
     @classmethod
-    def get_entity_graph(cls, limit_entities=5, limit_relationships=10):
+    def get_entity_graph(cls, limit_entities=12):
+    
+        top_entities = (
+            Entity.query
+            .filter_by(is_deleted=False)
+            .filter(Entity.entity_type == "Company")
+            .order_by(Entity.confidence_score.desc())
+            .limit(limit_entities)
+            .all()
+        )
+
+        entity_ids = [e.id for e in top_entities]
+
+        relationships = (
+            EntityRelationship.query
+            .filter(
+                EntityRelationship.source_entity_id.in_(entity_ids),
+                EntityRelationship.target_entity_id.in_(entity_ids),
+                EntityRelationship.is_deleted == False
+            )
+            .order_by(EntityRelationship.confidence_score.desc())
+            .all()
+        )
+
+        nodes = []
+
+        for e in top_entities:
+            nodes.append({
+                "id": e.id,
+                "name": e.name,
+                "type": e.entity_type,
+                "confidence": e.confidence_score
+            })
+
+        links = []
+
+        for r in relationships:
+            links.append({
+                "source": r.source_entity_id,
+                "target": r.target_entity_id,
+                "type": r.relationship_type,
+                "confidence": r.confidence_score
+            })
+
+        return {
+            "nodes": nodes,
+            "links": links
+        }
+
         """
         Retrieves top entities and their strongest relationships for visualization.
         """
@@ -299,7 +347,7 @@ class EntityService:
         rels = EntityRelationship.query.filter(
             (EntityRelationship.source_entity_id.in_(entity_ids)) |
             (EntityRelationship.target_entity_id.in_(entity_ids))
-        ).filter_by(is_deleted=False).order_by(EntityRelationship.confidence_score.desc()).limit(limit_relationships).all()
+        ).filter_by(is_deleted=False).order_by(EntityRelationship.confidence_score.desc()).limit(50).all()
         
         # Need to ensure all nodes present in links are also in the nodes list
         extra_entity_ids = set()

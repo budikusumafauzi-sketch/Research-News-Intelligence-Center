@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}News Feed - RNIC{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="page-title"><i class="bi bi-newspaper"></i> News Feed</h1>
+    <span class="text-muted" style="font-size: 0.9rem;">Real-time Monitored Sources</span>
+</div>
+
+<div class="panel fade-in-up">
+    <div class="panel-header">
+        <h2 class="panel-title">Latest Articles</h2>
+    </div>
+    <div class="panel-body p-0">
+        {% if news_list and news_list|length > 0 %}
+            <div class="feed-list stagger-container">
+                {% for item in news_list %}
+                <div class="feed-item stagger-item align-items-center">
+                    <div class="feed-icon news"><i class="bi bi-newspaper"></i></div>
+                    <div class="feed-content d-flex justify-content-between w-100">
+                        <div>
+                            <h6><a href="{{ item.original_url }}" target="_blank" class="feed-title text-decoration-none">{{ item.title }}</a></h6>
+                            <div class="feed-meta">
+                                {{ item.source.name if item.source else 'Unknown Source' }} 
+                                &bull; 
+                                {{ item.published_at.strftime('%Y-%m-%d %H:%M') if item.published_at else 'Unknown Date' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-inbox fs-1 mb-3 d-block opacity-50"></i>
+                <h5 class="mb-2">No News Available</h5>
+                <p class="mb-0">The intelligence engine has not synced any news yet.</p>
+                <p class="small">Background workers will populate this feed automatically.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
